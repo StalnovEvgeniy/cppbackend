@@ -46,9 +46,6 @@ void StartServer(uint16_t port){
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
     }
-
-
-
 }
 
 //Запуск клиента UDP
