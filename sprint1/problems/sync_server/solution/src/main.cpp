@@ -53,17 +53,17 @@ StringResponse HandleRequest(StringRequest&& req) {
     //targetRequest.
     //const char* cText = targetRequest.;
     if (verbRequest == http::verb::get) {
-        std::string text{"<strong>Hello, "sv};
+        std::string text{"Hello, "s};
 
-        auto targetRequest = req.target();
-        targetRequest = targetRequest.substr(1, targetRequest.length() - 1);
-        text.append(targetRequest.data());
-        text.append(std::string_view ("</strong>"sv));
+        auto target = req.target();
+        target = targetRequest.substr(1, target.length() - 1);
+        text.append(target.data());
+        //text.append(std::string_view ("</strong>"s));
         return text_response(http::status::ok, text);
     } else if (verbRequest == http::verb::head) {
         return text_response(http::status::ok, ""sv);
     } else {
-        return text_response(http::status::method_not_allowed, "<strong>Invalid method</strong>"sv);
+        return text_response(http::status::method_not_allowed, "Invalid method"sv);
     }
     // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
     //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
