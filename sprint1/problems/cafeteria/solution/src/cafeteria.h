@@ -8,6 +8,12 @@
 #include <boost/asio/strand.hpp>
 #include <memory>
 
+#include <boost/asio/bind_executor.hpp>
+#include <chrono>
+
+#include <thread>
+#include <atomic>
+
 #include "hotdog.h"
 #include "result.h"
 
@@ -15,10 +21,47 @@
 #include <iostream>
 
 namespace net = boost::asio;
-using Timer = net::steady_timer;
+namespace sys = boost::system;
 
-using osync = std::osyncstream;
+using namespace std::chrono;
+using namespace std::literals;
 
+class ThreadChecker {
+public:
+    explicit ThreadChecker(std::atomic_int& counter)
+        : counter_{counter} {
+    }
+
+    ThreadChecker(const ThreadChecker&) = delete;
+    ThreadChecker& operator=(const ThreadChecker&) = delete;
+
+    ~ThreadChecker() {
+        // assert выстрелит, если между вызовом конструктора и деструктора
+        // значение expected_counter_ изменится
+        assert(expected_counter_ == counter_);
+    }
+
+private:
+    std::atomic_int& counter_;
+    int expected_counter_ = ++counter_;
+};
+
+class Logger {
+public:
+    explicit Logger(std::string id)
+        : id_(std::move(id)) {
+    }
+
+    void LogMessage(std::string_view message) const {
+        std::osyncstream os{std::cout};
+        os << id_ << "> ["sv << duration<double>(steady_clock::now() - start_time_).count()
+           << "s] "sv << message << std::endl;
+    }
+
+private:
+    std::string id_;
+    steady_clock::time_point start_time_{steady_clock::now()};
+};
 
 // Функция-обработчик операции приготовления хот-дога
 using HotDogHandler = std::function<void(Result<HotDog> hot_dog)>;
@@ -33,77 +76,59 @@ public:
         sausage_{std::move(sausage)},
         bread_{std::move(bread)},
         cooker_{std::move(cooker)},
-        handler_{std::move(handler)},
-        hotDog_{id_, sausage_, bread_}{
+        handler_{std::move(handler)} {
 
     }
 
     // Запускает асинхронное выполнение заказа
     void Execute() {
-        osync{std::cout} << "Finish #" << id_ << std::endl;
+        BakingBread();
+        FrytingSausage();
 
-        /*auto strand = net::make_strand(io_);
-        net::dispatch(io_, [&strand, self = shared_from_this()] {
-            net:post(strand, [&self] {
-                self->BakingBread();
-                self->FrytingSausage();
-            });
-            net::post(strand, [&self] {
-                self->Deliver();
-            });
-        });*/
     }
 
 private:
     void BakingBread() {
-        auto strand = net::make_strand(io_);
-        boost::asio::steady_timer timer_(io_);
-
-        // Set an expiry time relative to now.
-        timer_.expires_after(Milliseconds(1000));
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
-        bread_->StartBake(*cooker_, [&timer_, self = shared_from_this()]() {
-
-            // Wait for the timer to expire.
-            timer_.wait();
+        bread_->StartBake(*cooker_, [self = shared_from_this()]() {
+            self->timerBread_.expires_from_now(Milliseconds{1000});
+            self->timerBread_.async_wait(
+                        net::bind_executor(self->strand_, [self = std::move(self)](sys::error_code ec) {
+                self->OnBaked(ec);
+            }));
         });
-        OnBaked();
     }
-    void OnBaked(){
+    void OnBaked(sys::error_code ec) {
+        ThreadChecker checker{counter_};
         bread_->StopBaking();
+        if (ec) {
+            logger_.LogMessage("Baked error : "s + ec.what());
+        } else {
 
-        // Timer expired.
-        sausage_frited_ = true;
+            bread_baked_ = true;
+        }
 
-         //std::lock_guard lk{mutex_};
-        //ThreadChecker checker{counter_};
-
-        //hotDog = result_.GetValue();
+        CheckReadiness();
     }
 
     void FrytingSausage() {
-
-
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
         sausage_->StartFry(*cooker_, [self = shared_from_this()]() {
-            //boost::asio::steady_timer timer_(self->io_);
-
-            // Set an expiry time relative to now.
-            //timer_.expires_after(Milliseconds(1000));
-
-            // Wait for the timer to expire.
-            //timer_.wait();
-            self->OnSausageFrited();
+            self->timerSausage_.expires_from_now(Milliseconds{1500});
+            self->timerSausage_.async_wait(
+                        net::bind_executor(self->strand_, [self = std::move(self)](sys::error_code ec) {
+                self->OnSausageFried(ec);
+            }));
         });
     }
 
-    void OnSausageFrited() {
-        //std::lock_guard lk{mutex_};
-        //ThreadChecker checker{counter_};
+    void OnSausageFried(sys::error_code ec) {
+        ThreadChecker checker{counter_};
         sausage_->StopFry();
+        if (ec) {
+            logger_.LogMessage("Sausage Fried error : "s + ec.what());
+        } else {
 
-        sausage_frited_ = true;
-
+            sausage_baked_ = true;
+        }
 
         CheckReadiness();
     }
@@ -114,38 +139,43 @@ private:
              return;
          }
 
+        if (IsReadyToBaked())
         // В случае ошибки уведомляем клиента о невозможности выполнить заказ
         return Deliver();
     }
 
+    //[[nodiscard]]
+    bool IsReadyToBaked() const {
+        return bread_baked_ && bread_->IsCooked() &&
+                sausage_baked_ && sausage_->IsCooked();
+    }
 
     void Deliver() {
-        // Защита заказа от повторной доставки
-        //delivered_ = true;
-        // Доставляем   хот дог в случае успеха либо nullptr, если возникла ошибка
-        //handler_(result_);
+        delivered_ = true;
+        handler_(Result{HotDog{id_, sausage_, bread_}});
     }
 
     net::io_context& io_;
+    net::strand<net::io_context::executor_type> strand_{net::make_strand(io_)};
     int id_{0};
 
-    //Store&  store_;
     std::shared_ptr<Sausage> sausage_;
     std::shared_ptr<Bread> bread_;
     std::shared_ptr<GasCooker> cooker_;
     HotDogHandler handler_;
 
-    HotDog hotDog_;
-
-    Result<HotDog> result_{hotDog_};
 
 
-    bool sausage_frited_ = false;
-    bool delivered_ = false; // Заказ доставлен?
+    Logger logger_{std::to_string(id_)};
 
-    //boost::asio::steady_timer baking_timer_(io_);
-    //Timer frying_timer_{io_, 1s};
-    //Timer baking_timer_{io_, 1.5s};
+    bool sausage_baked_ = false;
+    bool bread_baked_ = false;
+    bool delivered_ = false;
+
+    std::atomic_int counter_{0};
+
+    net::steady_timer timerBread_{io_, Milliseconds{1000}};
+    net::steady_timer timerSausage_{io_, Milliseconds{1500}};
 
 };
 
@@ -159,22 +189,15 @@ public:
     // Асинхронно готовит хот-дог и вызывает handler, как только хот-дог будет готов.
     // Этот метод может быть вызван из произвольного потока
     void OrderHotDog(HotDogHandler handler) {
-        auto strand = net::make_strand(io_);
-        std::shared_ptr<Bread> bread = store_.GetBread();
-        std::shared_ptr<Sausage> sausage = store_.GetSausage();
-
         // TODO: Реализуйте метод самостоятельно
         // При необходимости реализуйте дополнительные классы
 
 
         const int order_id = ++next_order_id_;
-        osync{std::cout} << "Start #" << order_id << std::endl;
-        net::dispatch(strand, [&]{
-            std::make_shared<Order>(io_, order_id,
-                                      std::move(sausage), std::move(bread),
-                                      std::move(gas_cooker_), std::move(handler))->Execute();
-            osync{std::cout} << "End #" << order_id << std::endl;
-        });
+         std::make_shared<Order>(io_, order_id,
+                                 store_.GetSausage(), store_.GetBread(),
+                                 gas_cooker_, std::move(handler)
+                                 )->Execute();
     }
 
 private:
@@ -186,7 +209,7 @@ private:
     // Плита создаётся с помощью make_shared, так как GasCooker унаследован от
     // enable_shared_from_this.
     std::shared_ptr<GasCooker> gas_cooker_ = std::make_shared<GasCooker>(io_);
-    int next_order_id_ = 0;
-    //HotDog hotDog;
+    //int
+    std::atomic_int next_order_id_{0};
 
 };

@@ -62,7 +62,7 @@ public:
 
     Clock::duration GetCookDuration() const {
         if (!frying_start_time_ || !frying_end_time_) {
-            throw std::logic_error("Sausage has not been cooked");
+            throw std::logic_error("Sausage has not been cooked!!!");
         }
         return *frying_end_time_ - *frying_start_time_;
     }
@@ -108,12 +108,6 @@ public:
             self->baking_start_time_ = Clock::now();
             handler();
         });
-
-        return;
-
-        // Реализуйте этот метод аналогично Sausage::StartFry
-        assert(!"Bread::StartBake is not implemented");
-        throw std::logic_error("Bread::StartBake is not implemented");
     }
 
     // Останавливает приготовление хлеба и освобождает горелку.
@@ -128,32 +122,20 @@ public:
         // Освобождаем горелку
         gas_cooker_lock_.Unlock();
 
-        return;
-
-        // Реализуйте этот метод по аналогии с Sausage::StopFry
-        assert(!"Bread::StopBaking is not implemented");
-        throw std::logic_error("Bread::StopBaking is not implemented");
     }
 
     // Информирует, испечён ли хлеб
     bool IsCooked() const noexcept {
         return baking_start_time_.has_value() && baking_end_time_.has_value();
 
-        // Реализуйте этот метод аналогично Sausage::IsCooked
-        assert(!"Bread::IsCooked is not implemented");
-        return false;
     }
 
     // Возвращает продолжительность выпекания хлеба. Бросает исключение, если хлеб не был испечён
     Clock::duration GetBakingDuration() const {
         if (!baking_start_time_ || !baking_end_time_) {
-            throw std::logic_error("Sausage has not been baked");
+            throw std::logic_error("Bread has not been baked");
         }
         return *baking_end_time_ - *baking_start_time_;
-
-        // Реализуйте этот метод аналогично Sausage::GetCookDuration
-        assert(!"Bread::GetBakingDuration is not implemented");
-        throw std::logic_error("Bread::GetBakingDuration is not implemented");
     }
 
 private:
@@ -175,5 +157,6 @@ public:
     }
 
 private:
-    int next_id_ = 0;
+    //int
+    std::atomic_int next_id_ = 0;
 };
