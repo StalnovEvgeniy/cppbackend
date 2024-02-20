@@ -59,7 +59,7 @@ StringResponse HandleRequest(StringRequest&& req) {
        //text.append(std::string_view ("</strong>"s));
        return text_response(http::status::ok, text);
    } else if (verbRequest == http::verb::head) {
-       return nul_response(http::status::ok);
+       return text_response(http::status::ok,  ""sv);
    } else {
        return text_response(http::status::method_not_allowed, ""sv);
    }
