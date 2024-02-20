@@ -61,7 +61,7 @@ StringResponse HandleRequest(StringRequest&& req) {
    } else if (verbRequest == http::verb::head) {
        return text_response(http::status::ok,  ""sv);
    } else {
-       return text_response(http::status::method_not_allowed, ""sv);
+       return text_response(http::status::method_not_allowed, "Invalid method"sv);
    }
     // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
     //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
