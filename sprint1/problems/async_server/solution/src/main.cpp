@@ -51,12 +51,12 @@ StringResponse HandleRequest(StringRequest&& req) {
    //targetRequest.
    //const char* cText = targetRequest.;
    if (verbRequest == http::verb::get) {
-       std::string text{"<strong>Hello, "s};
+       std::string text{"Hello, "s};
 
        auto target = req.target();
        //target = targetRequest.substr(1, target.length() - 1);
        text.append(targetRequest.substr(1));
-       text.append(std::string_view ("</strong>"s));
+       //text.append(std::string_view ("</strong>"s));
        return text_response(http::status::ok, text);
    } else if (verbRequest == http::verb::head) {
        return nul_response(http::status::ok);
