@@ -42,37 +42,30 @@ StringResponse HandleRequest(StringRequest&& req) {
     const auto text_response = [&req](http::status status, std::string_view text) {
         return MakeStringResponse(status, text, req.version(), req.keep_alive());
     };
-
-    // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
-    return text_response(http::status::ok, "<strong>Hello</strong>"sv);
-}
-
-/*StringResponse HandleRequest(StringRequest&& req) {
-    // Подставьте сюда код из синхронной версии HTTP-сервера
-    //return MakeStringResponse(http::status::ok, "OK"sv, req.version(), req.keep_alive());
-    const auto text_response = [&req](http::status status, std::string_view text) {
-        return MakeStringResponse(status, text, req.version(), req.keep_alive());
+    const auto nul_response = [&req](http::status status) {
+        return MakeStringResponse(status, req["Content-Length"], req.version(), req.keep_alive());
     };
 
-     auto verbRequest = req.method();
-     auto targetRequest = req.target();
-    //targetRequest.
-    //const char* cText = targetRequest.;
-    if (verbRequest == http::verb::get) {
-        std::string text{"<strong>Hello, "s};
+    auto verbRequest = req.method();
+    auto targetRequest = req.target();
+   //targetRequest.
+   //const char* cText = targetRequest.;
+   if (verbRequest == http::verb::get) {
+       std::string text{"<strong>Hello, "s};
 
-        auto target = req.target();
-        target = targetRequest.substr(1, target.length() - 1);
-        text.append(target.data());
-        text.append(std::string_view ("</strong>"s));
-        return text_response(http::status::ok, target);
-    } else if (verbRequest == http::verb::head) {
-        return text_response(http::status::ok, ""sv);
-    } else {
-        return text_response(http::status::method_not_allowed, ""sv);
-    }
-
-}*/
+       auto target = req.target();
+       //target = targetRequest.substr(1, target.length() - 1);
+       text.append(targetRequest.substr(1));
+       text.append(std::string_view ("</strong>"s));
+       return text_response(http::status::ok, text);
+   } else if (verbRequest == http::verb::head) {
+       return nul_response(http::status::ok);
+   } else {
+       return text_response(http::status::method_not_allowed, ""sv);
+   }
+    // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
+    //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
+}
 
 // Запускает функцию fn на n потоках, включая текущий
 template <typename Fn>
@@ -105,7 +98,7 @@ int main() {
     const auto address = net::ip::make_address("0.0.0.0");
     constexpr net::ip::port_type port = 8080;
     http_server::ServeHttp(ioc, {address, port}, [](auto&& req, auto&& sender) {
-        // sender(HandleRequest(std::forward<decltype(req)>(req)));
+         sender(HandleRequest(std::forward<decltype(req)>(req)));
     });
 
     // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
