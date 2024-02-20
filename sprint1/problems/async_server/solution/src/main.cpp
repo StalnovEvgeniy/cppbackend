@@ -39,6 +39,15 @@ StringResponse MakeStringResponse(http::status status, std::string_view body, un
 }
 
 StringResponse HandleRequest(StringRequest&& req) {
+    const auto text_response = [&req](http::status status, std::string_view text) {
+        return MakeStringResponse(status, text, req.version(), req.keep_alive());
+    };
+
+    // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
+    return text_response(http::status::ok, "<strong>Hello</strong>"sv);
+}
+
+/*StringResponse HandleRequest(StringRequest&& req) {
     // Подставьте сюда код из синхронной версии HTTP-сервера
     //return MakeStringResponse(http::status::ok, "OK"sv, req.version(), req.keep_alive());
     const auto text_response = [&req](http::status status, std::string_view text) {
@@ -63,7 +72,7 @@ StringResponse HandleRequest(StringRequest&& req) {
         return text_response(http::status::method_not_allowed, ""sv);
     }
 
-}
+}*/
 
 // Запускает функцию fn на n потоках, включая текущий
 template <typename Fn>
