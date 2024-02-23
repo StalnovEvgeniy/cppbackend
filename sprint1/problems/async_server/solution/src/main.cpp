@@ -42,9 +42,6 @@ StringResponse HandleRequest(StringRequest&& req) {
     const auto text_response = [&req](http::status status, std::string_view text) {
         return MakeStringResponse(status, text, req.version(), req.keep_alive());
     };
-    const auto nul_response = [&req](http::status status) {
-        return MakeStringResponse(status, req["Content-Length"], req.version(), req.keep_alive());
-    };
 
     auto verbRequest = req.method();
     auto targetRequest = req.target();
@@ -58,13 +55,15 @@ StringResponse HandleRequest(StringRequest&& req) {
        text.append(targetRequest.substr(1));
        //text.append(std::string_view ("</strong>"s));
        return text_response(http::status::ok, text);
-   } else if (verbRequest == http::verb::head) {
-       return text_response(http::status::ok,  ""sv);
-   } else {
-       return text_response(http::status::method_not_allowed, "Invalid method"sv);
    }
-    // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
-    //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
+   if (verbRequest == http::verb::head) {
+       return text_response(http::status::ok,  ""sv);
+   }
+
+   return text_response(http::status::method_not_allowed, "Invalid method"sv);
+
+   // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
+   //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
 }
 
 // Запускает функцию fn на n потоках, включая текущий
