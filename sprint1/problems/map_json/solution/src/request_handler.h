@@ -59,12 +59,6 @@ public:
                                       req.version(), req.keep_alive(), ContentType::APP_JSON);
         };
 
-        /*const std::vector<Map>& maps = game_.GetMaps();
-        if (maps.empty()) {
-            send(json_response(http::status::not_found,
-                               GetJsonDataError("mapNotFound"sv, "Map not found")));
-            return;
-        }*/
         auto target = req.target();
         std::string_view reqListMaps = "/api/v1/maps"sv;
         if (target == reqListMaps.data()) {
@@ -78,14 +72,14 @@ public:
 
             if (!map_ptr)// == nullptr)
                 send(json_response(http::status::not_found,
-                                   GetJsonDataError(id, "Map not found")));
+                                   GetJsonDataError("mapNotFound"sv, "Map not found"sv)));
             else
                 send(json_response(http::status::ok, GetJsonData(*map_ptr)));
             return;
         }
         if (target.starts_with("/api/"sv)) {
             send(json_response(http::status::bad_request,
-                               GetJsonDataError("badRequest"sv, "Bad request")));
+                               GetJsonDataError("badRequest"sv, "Bad request"sv)));
             return;
         }
         // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
