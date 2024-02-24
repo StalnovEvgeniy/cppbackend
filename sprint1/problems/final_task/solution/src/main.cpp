@@ -28,7 +28,6 @@ void RunWorkers(unsigned cnt, const Fun& fun) {
     fun();
 }
 
-}
 
 }  // namespace
 
