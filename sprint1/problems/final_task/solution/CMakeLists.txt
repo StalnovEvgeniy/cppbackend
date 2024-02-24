@@ -25,8 +25,8 @@ add_executable(game_server
 	src/boost_json.cpp
 	src/json_loader.h
 	src/json_loader.cpp
-        src/json_parsing.h
-        src/json_parsing.cpp
+    src/json_parsing.h
+    src/json_parsing.cpp
 	src/request_handler.cpp
 	src/request_handler.h
 )
