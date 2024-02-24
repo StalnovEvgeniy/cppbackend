@@ -6,10 +6,13 @@
 #include <boost/json.hpp>
 
 #include "model.h"
+#include "json_str_literal.h"
 
 namespace json_parsing {
 
 using namespace model;
+
+using namespace json_string;
 
 boost::json::value GetJsonDataError(std::string_view code, std::string_view message);
 boost::json::value GetJsonData(const Game::Maps& maps);

@@ -23,6 +23,7 @@ add_executable(game_server
 	src/model.cpp
 	src/tagged.h
 	src/boost_json.cpp
+    src/json_str_literal.h
 	src/json_loader.h
 	src/json_loader.cpp
     src/json_parsing.h

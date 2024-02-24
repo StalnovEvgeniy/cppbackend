@@ -5,11 +5,14 @@
 
 #include <boost/json.hpp>
 
+#include "json_str_literal.h"
+
 namespace json_loader {
 
 using namespace model;
 
-using namespace std::literals;
+using namespace json_string;
+
 
 std::string toString(boost::json::string str) {
     return {str.begin(), str.end()};
@@ -19,8 +22,8 @@ void LoadRoads(Map& map, const boost::json::array& roads) {
     for (const auto& roadElement: roads) {
         const auto& roadObj = roadElement.as_object();
 
-        int start_x = roadObj.at("x0").as_int64();
-        int start_y = roadObj.at("y0").as_int64();
+        int start_x = roadObj.at(StrLiteral::x0).as_int64();
+        int start_y = roadObj.at(StrLiteral::y0).as_int64();
 
         if (roadObj.count("x1")) {
             int end_x = roadObj.at("x1").as_int64();
@@ -48,10 +51,10 @@ void LoadBuildings(Map& map, const boost::json::array& buildings) {
     for (const auto& buildingElement: buildings) {
         const auto& buildingObj = buildingElement.as_object();
 
-        int x = buildingObj.at("x").as_int64();
-        int y = buildingObj.at("y").as_int64();
-        int width = buildingObj.at("w").as_int64();
-        int height = buildingObj.at("h").as_int64();
+        int x = buildingObj.at(StrLiteral::x).as_int64();
+        int y = buildingObj.at(StrLiteral::y).as_int64();
+        int width = buildingObj.at(StrLiteral::w).as_int64();
+        int height = buildingObj.at(StrLiteral::h).as_int64();
 
         map.AddBuilding(Building {
             Rectangle {
@@ -66,11 +69,11 @@ void LoadOffices(Map& map, const boost::json::array& offices) {
     for (const auto& office_element: offices) {
         const auto& office_obj = office_element.as_object();
 
-        auto id = toString(office_obj.at("id").as_string());
-        int x = office_obj.at("x").as_int64();
-        int y = office_obj.at("y").as_int64();
-        int x_offset = office_obj.at("offsetX").as_int64();
-        int y_offset = office_obj.at("offsetY").as_int64();
+        auto id = toString(office_obj.at(StrLiteral::id).as_string());
+        int x = office_obj.at(StrLiteral::x).as_int64();
+        int y = office_obj.at(StrLiteral::y).as_int64();
+        int x_offset = office_obj.at(StrLiteral::offsetX).as_int64();
+        int y_offset = office_obj.at(StrLiteral::offsetY).as_int64();
 
         map.AddOffice(Office {
             Office::Id(id),
@@ -92,17 +95,17 @@ Game LoadGame(const std::filesystem::path& json_path) {
 
     auto obj = boost::json::parse(buffer.str()).as_object();
 
-    const auto& maps = obj.at("maps").as_array();
+    const auto& maps = obj.at(StrLiteral::maps).as_array();
     for (const auto& mapElement: maps) {
         const auto& mapObj = mapElement.as_object();
 
-        auto id = toString(mapObj.at("id").as_string());
-        auto name = toString(mapObj.at("name").as_string());
+        auto id = toString(mapObj.at(StrLiteral::id).as_string());
+        auto name = toString(mapObj.at(StrLiteral::name).as_string());
         Map map(Map::Id{id}, name);
 
-        LoadRoads(map, mapObj.at("roads").as_array());
-        LoadBuildings(map, mapObj.at("buildings").as_array());
-        LoadOffices(map, mapObj.at("offices").as_array());
+        LoadRoads(map, mapObj.at(StrLiteral::roads).as_array());
+        LoadBuildings(map, mapObj.at(StrLiteral::buildings).as_array());
+        LoadOffices(map, mapObj.at(StrLiteral::offices).as_array());
 
         game.AddMap(std::move(map));
     }

@@ -21,9 +21,6 @@ namespace sys = boost::system;
 using namespace std::literals;
 
 void ReportError(beast::error_code ec, std::string_view what);
-/*{
-    std::cerr << what << ": "sv << ec.message() << std::endl;
-}*/
 
 class SessionBase {
     // Напишите недостающий код, используя информацию из урока
@@ -33,12 +30,6 @@ public:
     SessionBase& operator=(const SessionBase&) = delete;
 
     void Run();
-    /*void Run() {
-        // Вызываем метод Read, используя executor объекта stream_.
-        // Таким образом вся работа со stream_ будет выполняться, используя его executor
-        net::dispatch(stream_.get_executor(),
-                      beast::bind_front_handler(&SessionBase::Read, GetSharedThis()));
-    }*/
 
 protected:
     explicit SessionBase(tcp::socket&& socket)

@@ -28,12 +28,12 @@ json::value GetJsonData(const Road& road)
     json::object object;
 
     const auto& [start_x, start_y] = road.GetStart();
-    object["x0"] = start_x;
-    object["y0"] = start_y;
+    object[StrLiteral::x0] = start_x;
+    object[StrLiteral::y0] = start_y;
 
     const auto& [end_x, end_y] = road.GetEnd();
     if (road.IsVertical()) {
-        object["y1"] = end_y;
+        object[StrLiteral::y1] = end_y;
     } else {
         object["x1"] = end_x;
     }
@@ -46,10 +46,10 @@ json::value GetJsonData(const Building& building)
     json::object object;
 
     const auto& [position, size] = building.GetBounds();
-    object["x"] = position.x;
-    object["y"] = position.y;
-    object["w"] = size.width;
-    object["h"] = size.height;
+    object[StrLiteral::x] = position.x;
+    object[StrLiteral::y] = position.y;
+    object[StrLiteral::w] = size.width;
+    object[StrLiteral::h] = size.height;
 
     return json::value(std::move(object));
 }
@@ -80,8 +80,8 @@ boost::json::value GetJsonData(const Game::Maps& maps)
     json::array mapsArray;
     for (auto& map :maps ) {
         json::object mapObj;
-        mapObj["id"] = *map.GetId();
-        mapObj["name"] = map.GetName();
+        mapObj[StrLiteral::id] = *map.GetId();
+        mapObj[StrLiteral::name] = map.GetName();
 
         //std::cout << json::serialize(mapObj) << std::endl; // {"name": "Harry Potter"}
         mapsArray.push_back(mapObj);
@@ -94,20 +94,20 @@ boost::json::value GetJsonData(const Map& map)
 {
     json::object mapObj;
 
-    mapObj["id"] = *map.GetId();
-    mapObj["name"] = map.GetName();
+    mapObj[StrLiteral::id] = *map.GetId();
+    mapObj[StrLiteral::name] = map.GetName();
 
     json::array roadsArray;
     for (const auto& road: map.GetRoads()) {
         roadsArray.push_back(gameWigets::GetJsonData(road));
     }
-    mapObj["roads"] = roadsArray;
+    mapObj[StrLiteral::roads] = roadsArray;
 
     json::array buildingsArray;
     for (const auto& building: map.GetBuildings()) {
         buildingsArray.push_back(gameWigets::GetJsonData(building));
     }
-    mapObj["buildings"] = buildingsArray;
+    mapObj[StrLiteral::buildings] = buildingsArray;
 
     json::array officesArray;
     for (const auto& office: map.GetOffices()) {

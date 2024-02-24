@@ -15,17 +15,19 @@ namespace net = boost::asio;
 
 namespace {
 
-// Запускает функцию fn на n потоках, включая текущий
-template <typename Fn>
-void RunWorkers(unsigned n, const Fn& fn) {
-    n = std::max(1u, n);
+/// Запускает функцию fun на cnt потоках, включая текущий
+template <typename Fun>
+void RunWorkers(unsigned cnt, const Fun& fun) {
+    cnt = std::max(1u, cnt);
     std::vector<std::jthread> workers;
-    workers.reserve(n - 1);
-    // Запускаем n-1 рабочих потоков, выполняющих функцию fn
-    while (--n) {
-        workers.emplace_back(fn);
+    workers.reserve(cnt - 1);
+    // Запускаем cnt-1 рабочих потоков, выполняющих функцию fun
+    while (--cnt) {
+        workers.emplace_back(fun);
     }
-    fn();
+    fun();
+}
+
 }
 
 }  // namespace
