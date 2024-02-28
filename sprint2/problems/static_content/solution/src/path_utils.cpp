@@ -23,6 +23,16 @@ bool IsSubPath(fs::path path, fs::path base) {
 fs::path GetPath(fs::path  requestPath, fs::path rootPath)
 {
     using namespace std::literals;
+    if (requestPath.empty() /*|| requestPath.c_str() == "/"sv*/) {
+        requestPath.append(INDEX_HTML);
+        //requestPath.append(SLESH);
+    }
+    if (requestPath.c_str() == SLESH) {
+       requestPath.append(INDEX_HTML);
+    }
+
+
+    //auto filePath = fs::weakly_canonical(wwwRootPath_ / requestPath);
 
     return fs::weakly_canonical(rootPath / requestPath);
 }

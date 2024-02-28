@@ -11,6 +11,7 @@ namespace path_utils {
 using namespace std::literals;
 namespace fs = std::filesystem;
 
+constexpr static std::string_view SLESH = "/"sv;
 constexpr static std::string_view INDEX_HTML = "index.html"sv;
 
 

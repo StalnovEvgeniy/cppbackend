@@ -65,8 +65,8 @@ public:
         // Обработать запрос request и отправить ответ, используя send
 
 
-        const auto text_response = [&req](http::status status, std::string_view text) {
-            return MakeStringResponse(status, text, req.version(), req.keep_alive());
+        const auto text_response = [&req](http::status status, std::string_view text, std::string_view contentType = ContentType::TEXT_HTML) {
+            return MakeStringResponse(status, text, req.version(), req.keep_alive(), contentType);
         };
 
         auto json_response = [&req](http::status status, json::value value) {
@@ -104,32 +104,40 @@ public:
 
             fs::path requestPath{target};
             //auto filePath = GetPath(requestPath, wwwRootPath_);
-            if (requestPath.empty() || requestPath.c_str() == "/"sv) {
+            if (requestPath.empty() ||
+                    requestPath.c_str() == SLESH) {
                 requestPath.append(INDEX_HTML);
+                //requestPath.append(SLESH);
+            } else
+            if (requestPath.c_str() == SLESH) {
+               requestPath.append(INDEX_HTML);
             }
+
 
             auto filePath = fs::weakly_canonical(wwwRootPath_ / requestPath);
 
             auto extension = filePath.extension().string();
             auto contentType = GetMimeType(extension);
             if (IsSubPath(filePath, wwwRootPath_)) {
-                beast::error_code ec;
-                //http::write(adapter, filePath);
-                //std::cout << "Reqeast to open content file "sv << filePath << std::endl;
-                auto response = file_response(http::status::ok, filePath.c_str(), contentType, ec);
-                if (!ec){
-                    send(response);
-                }else {
+                if (fs::exists(filePath)) {
+                        beast::error_code ec;
+                        //http::write(adapter, filePath);
+                        //std::cout << "Reqeast to open content file "sv << filePath << std::endl;
+                        auto response = file_response(http::status::ok, filePath.c_str(), contentType, ec);
+                        if (!ec){
+                            send(response);
+                        }
+                        //http::write(adapter, response);
+                } else {
                     //std::cout << "Failed to open content file "sv << filePath << std::endl;
-                    http::write(adapter, response);
-                    send(text_response(http::status::not_found, "File not found"sv));
+                    send(text_response(http::status::not_found, "File not found"sv, ContentType::TEXT_TEXT));
                 }
             } else {
-                send(text_response(http::status::bad_request, "Invalid path"sv));
+                send(text_response(http::status::bad_request, "Invalid path"sv, ContentType::TEXT_TEXT));
             }
         }
 
-        //http::write(adapter, req);
+        http::write(adapter, req);
         // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
         //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
 
