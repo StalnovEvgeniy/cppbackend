@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for i in {0..11}
+do
+   # Используем переменную i внутри строки, заключая её
+   # в фигурные скобки после знака $.
+   FILE_DATE=`date --date="-${i}days" +%Y_%m_%d`
+   echo "Log file for $FILE_DATE" > /var/log/my_app_$FILE_DATE.log
+done
+

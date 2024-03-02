@@ -36,11 +36,18 @@ add_executable(game_server
         src/sync_write_os.h
         src/path_utils.h
         src/path_utils.cpp
-        src/my_logger.h
+        src/logger.h
+        src/logger.cpp
+        src/logger_utils.h
+        src/logger_utils.cpp
+        src/logger_str_literal.h
+        src/logger_str_literal.cpp
+        src/log_request.h
+        src/log_request.cpp
 )
 
 # используем "импортированную" цель CONAN_PKG::boost
 target_include_directories(game_server PRIVATE CONAN_PKG::boost)
-target_link_libraries(game_server CONAN_PKG::boost)
-target_link_libraries(game_server PRIVATE Threads::Threads)
+target_link_libraries(game_server PRIVATE Threads::Threads  CONAN_PKG::boost)
+
 add_compile_definitions(BOOST_BEAST_USE_STD_STRING_VIEW)
