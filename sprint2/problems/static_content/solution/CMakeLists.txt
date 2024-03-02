@@ -4,7 +4,7 @@ project(game_server CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+conan_basic_setup()
 
 find_package(Boost 1.78.0 REQUIRED)
 if(Boost_FOUND)
@@ -39,8 +39,6 @@ add_executable(game_server
         src/my_logger.h
 )
 
-# используем "импортированную" цель CONAN_PKG::boost
-target_include_directories(game_server PRIVATE CONAN_PKG::boost)
-target_link_libraries(game_server CONAN_PKG::boost)
+
 target_link_libraries(game_server PRIVATE Threads::Threads)
 add_compile_definitions(BOOST_BEAST_USE_STD_STRING_VIEW)
