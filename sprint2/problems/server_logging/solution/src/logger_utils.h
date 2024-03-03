@@ -9,13 +9,18 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 
+#include <boost/json.hpp>
 
 namespace logger_utils {
 
 namespace logging = boost::log;
+namespace json = boost::json;
+
 
 void InitLogger();
 void LogFormatter(logging::record_view const& rec, logging::formatting_ostream& strm);
+
+void SendLogInfo(json::value custom_data);
 
 void LogRequest(const std::string address, std::string uri, std::string method);
 void LogReponse(int response_time, int code, std::string content_type);

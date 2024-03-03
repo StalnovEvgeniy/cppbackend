@@ -52,6 +52,7 @@ protected:
         });
     }
 
+    tcp::endpoint GetEndpoint() const;
 
 private:
     virtual std::shared_ptr<SessionBase> GetSharedThis() = 0;
@@ -91,7 +92,8 @@ private:
         // Захватываем умный указатель на текущий объект Session в лямбде,
         // чтобы продлить время жизни сессии до вызова лямбды.
         // Используется generic-лямбда функция, способная принять response произвольного типа
-        request_handler_(std::move(request), [self = this->shared_from_this()](auto&& response) {
+
+        request_handler_(GetEndpoint(), std::move(request), [self = this->shared_from_this()](auto&& response) {
             self->Write(std::move(response));
         });
     }
@@ -173,6 +175,7 @@ void ServeHttp(net::io_context& ioc, const tcp::endpoint& endpoint, RequestHandl
     // При помощи decay_t исключим ссылки из типа RequestHandler,
     // чтобы Listener хранил RequestHandler по значению
     using MyListener = Listener<std::decay_t<RequestHandler>>;
+
 
     std::make_shared<MyListener>(ioc, endpoint, std::forward<RequestHandler>(handler))->Run();
 

@@ -8,12 +8,12 @@ RUN apt update && \
       python3-pip \
       cmake \
     && \
-    pip3 install conan==1.* 
+    pip3 install conan==1.*
 
 # копируем conanfile.txt в контейнер и запускаем conan install
 COPY conanfile.txt /app/
 RUN mkdir /app/build && cd /app/build && \
-    conan install .. --build=missing -s compiler.libcxx=libstdc++11 -s build_type=Release
+    conan install .. -s compiler.libcxx=libstdc++11 -s build_type=Debug --build=missing
 
 # только после этого копируем остальные иходники
 COPY ./src /app/src

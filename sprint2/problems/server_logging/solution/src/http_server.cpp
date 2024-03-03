@@ -23,6 +23,10 @@ void SessionBase::Run() {
                   beast::bind_front_handler(&SessionBase::Read, GetSharedThis()));
 }
 
+tcp::endpoint SessionBase::GetEndpoint() const {
+    return stream_.socket().remote_endpoint();
+}
+
 void SessionBase::OnWrite(bool close, beast::error_code ec, [[maybe_unused]] std::size_t bytes_written) {
     if (ec) {
         return ReportError(ec, "write"sv);

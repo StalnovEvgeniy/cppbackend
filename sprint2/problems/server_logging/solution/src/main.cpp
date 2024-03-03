@@ -24,8 +24,8 @@
 #include "request_handler.h"
 #include "log_request.h"
 
-#include "logger.h"
-#include "logger_utils.h"
+//#include "logger.h"
+//#include "logger_utils.h"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -44,12 +44,12 @@ namespace {
 
 // Запускает функцию fun на cnt потоках, включая текущий
 template <typename Fun>
-void RunWorkers(unsigned cntThread, const Fun& fun) {
-    cntThread = std::max(1u, cntThread);
+void RunWorkers(unsigned numThread, const Fun& fun) {
+    numThread = std::max(1u, numThread);
     std::vector<std::jthread> workers;
-    workers.reserve(cntThread - 1);
+    workers.reserve(numThread - 1);
     // Запускаем cnt-1 рабочих потоков, выполняющих функцию fun
-    while (--cntThread) {
+    while (--numThread) {
         workers.emplace_back(fun);
     }
     fun();
@@ -101,12 +101,8 @@ int main(int argc, const char* argv[]) {
 
     try {
         // 1. Загружаем карту из файла и построить модель игры
-        //std::cout << "argsComandLine.configMap..."sv << argsComandLine.configMap << std::endl;
         model::Game game = json_loader::LoadGame(argsComandLine.configMap);
-
-        //std::cout << "argsComandLine.wwwRootPath..."sv << argsComandLine.wwwRootPath << std::endl;
         fs::path wwwRootPath{argsComandLine.wwwRootPath};
-        //std::cout << json::serialize(json_parsing::GetJsonData) << std::endl; // {"name": "Harry Potter"}
 
         // 2. Инициализируем io_context
         const unsigned num_threads = std::thread::hardware_concurrency();
@@ -116,21 +112,20 @@ int main(int argc, const char* argv[]) {
 
         // 4. Создаём обработчик HTTP-запросов и связываем его с моделью игры
         http_handler::RequestHandler handler{game, wwwRootPath};
-        //http_handler::LoggingRequestHandler logging_handler{handler};
+        http_handler::LoggingRequestHandler<http_handler::RequestHandler> loggingHandler{handler};
 
         // 5. Запустить обработчик HTTP-запросов, делегируя их обработчику запросов
 
         const auto address = net::ip::make_address("0.0.0.0");
         constexpr net::ip::port_type port = 8080;
-        http_server::ServeHttp(ioc, {address, port}, [&handler](auto&& req, auto&& send) {
-            //logging_handler.SetAddress(address.to_string());
-            //logging_handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));
-            handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));
+
+        http_server::ServeHttp(ioc, {address, port}, [&loggingHandler](auto&& endp, auto&& req, auto&& send) {
+          loggingHandler(std::forward<decltype(endp)>(endp), std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));
         });
 
 
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
-        std::cout << "Server has started..."sv << std::endl;
+        //std::cout << "Server has started..."sv << std::endl;
 
         // 6. Запускаем обработку асинхронных операций
         LogStartServer(address.to_string(), port);

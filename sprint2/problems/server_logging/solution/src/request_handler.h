@@ -47,6 +47,8 @@ using namespace response_utuls;
 using namespace request_utuls;
 using namespace logger_utils;
 
+using HttpRequest = http::request<http::string_body>;
+using HttpResponse = http::response<http::string_body>;
 
 // Запрос, тело которого представлено в виде строки
 //using StringRequest = http::request<http::string_body>;
@@ -62,8 +64,9 @@ public:
     RequestHandler &operator=(const RequestHandler&) = delete;
 
     template <typename Body, typename Allocator, typename Send>
-    void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
+    void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {//
         // Обработать запрос request и отправить ответ, используя send
+
 
 
         const auto text_response = [&req](http::status status, std::string_view text, std::string_view contentType = ContentType::TEXT_HTML) {
@@ -82,6 +85,9 @@ public:
         };
 
         auto target = req.target();
+
+
+        //LogRequest(address, target, req.method_string)();
 
 
         if (isMapsListRequest(req)) {
@@ -154,35 +160,5 @@ private:
     //std::map<std::string_view, std::string_view>& mapContex_;
 };
 
-template<class SomeRequestHandler>
-class LoggingRequestHandler {
-    LoggingRequestHandler(LoggingRequestHandler & decorated):
-        decorated_{decorated} {}
-    template <typename Body, typename Allocator, typename Send>
-    void LogRequest(const http::request<Body, http::basic_fields<Allocator>>& req){
-        auto target = req.target();
-        logger_utils::LogRequest(address_, target, req.method_string());
-    }
-    /*static void LogResponse(const Response& reg){
-        logger_utils::LogReponse(int response_time, int code, std::string content_type);
-    }*/
-public:
-     template <typename Body, typename Allocator, typename Send>
-     void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-         //LogRequest(req);
-         //Response resp =
-                 decorated_(std::move(req), std::move(send));
-         //LogResponse(resp);
-         //return resp;
-     }
-
-     void SetAddress(const std::string address)
-     {
-         address_.append(address);
-     }
-private:
-     SomeRequestHandler& decorated_;
-     std::string address_;
-};
 
 }  // namespace http_handler
