@@ -41,12 +41,10 @@ void InitLogger()
                 keywords::format = &LogFormatter
     );*/
 
-    logging::add_console_log(
-                std::clog,
-                keywords::format = &LogFormatter,
-                keywords::auto_flush = true
-    );
-
+    logging::add_console_log(std::cout,
+                             logging::keywords::format = &LogFormatter,
+                             logging::keywords::auto_flush = true
+            );
 }
 
 void SendLogInfo(const json::value value, const std::string_view endStr)
