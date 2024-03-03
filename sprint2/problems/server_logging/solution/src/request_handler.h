@@ -145,7 +145,7 @@ public:
             }
         }
 
-        http::write(adapter, req);
+        //http::write(adapter, req);
         // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
         //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
 

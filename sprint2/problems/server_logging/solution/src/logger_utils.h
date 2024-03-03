@@ -20,18 +20,18 @@ namespace json = boost::json;
 void InitLogger();
 void LogFormatter(logging::record_view const& rec, logging::formatting_ostream& strm);
 
-void SendLogInfo(json::value custom_data);
+void SendLogInfo(const json::value value, const std::string_view endStr);
 
-void LogRequest(const std::string address, std::string uri, std::string method);
-void LogReponse(int response_time, int code, std::string content_type);
+void LogRequest(const std::string address, const std::string uri, const std::string method);
+void LogReponse(const int response_time, const int code, const std::string content_type);
 
-void LogStartServer(std::string address, unsigned int port);
+void LogStartServer(const std::string address, const unsigned int port);
 
 
-void LogStopServer(int code);
-void LogFaultStopServer(int code, std::string exception);
+void LogStopServer(const int code);
+void LogFaultStopServer(const int code, const std::string exception);
 
-void LogNetworkError(int code, std::string text, std::string_view where);
+void LogNetworkError(const int code, const std::string text, const std::string_view where);
 
 }
 #endif // LOGGER_UTILS_H
