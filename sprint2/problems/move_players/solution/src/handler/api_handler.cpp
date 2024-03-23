@@ -287,4 +287,27 @@ bool ApiHandler::isApiGameStateRequest(const std::string_view target)
 
 }
 
+std::optional<Token> ApiHandler::TryExtractToken(const StringRequest &request)
+{
+
+}
+
+StringResponse ApiHandler::GetPlayers(const StringRequest &request) {
+    return ExecuteAuthorized([](const Token& token){
+        /* Выполняем действие A, используя токен, и возвращаем ответ */
+    });
+}
+
+StringResponse ApiHandler::SetPlayerAction(const StringRequest &request) {
+    return ExecuteAuthorized([](const Token& token){
+        /* Выполняем действие B, используя токен, и возвращаем ответ */
+    });
+}
+
+StringResponse ApiHandler::GetGameState(const StringRequest &request) {
+    return ExecuteAuthorized([](const Token& token){
+        /* Выполняем действие C, используя токен, и возвращаем ответ */
+    });
+}
+
 

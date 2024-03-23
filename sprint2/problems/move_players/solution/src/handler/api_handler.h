@@ -37,6 +37,24 @@ private:
     bool isApiGamePlayersActionRequest(const std::string_view target);
     bool isApiGameStateRequest(const std::string_view target);
 
+    std::optional<app::Token> TryExtractToken(const StringRequest& request);
+
+    template <typename Fn>
+    StringResponse ExecuteAuthorized(Fn&& action) {
+        /*if (auto token = TryExtractToken(request)) {
+            return action(*token);
+        } else {
+            return MakeUnauthorizedError();
+        }*/
+    }
+
+
+    StringResponse GetPlayers(const StringRequest& request);
+
+    StringResponse SetPlayerAction(const StringRequest& request);
+
+    StringResponse GetGameState(const StringRequest& request);
+
     std::shared_ptr <app::Application> app_;
 };
 
