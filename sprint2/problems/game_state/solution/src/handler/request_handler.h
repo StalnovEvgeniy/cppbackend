@@ -17,8 +17,6 @@
 
 #include "http/server.h"
 
-#include "response/utils.h"
-#include "request/utils.h"
 #include "logging/log_utils.h"
 
 #include "sync_write_os.h"
@@ -26,6 +24,12 @@
 #include "path_utils.h"
 
 #include "app/playertokens.h"
+
+#include "handler/request_utils.h"
+#include "handler/response_utils.h"
+#include "handler/api_handler.h"
+
+#include "app/application.h"
 
 namespace http_handler {
 
@@ -46,15 +50,9 @@ namespace fs = std::filesystem;
 
 using namespace json_parsing;
 using namespace path_utils;
-using namespace response_utuls;
-using namespace request_utuls;
 using namespace logger_utils;
 
-//using StringRequest = http::request<http::string_body>;
-//using HttpResponse = http::response<http::string_body>;
-
-// Запрос, тело которого представлено в виде строки
-using StringRequest = http::request<http::string_body>;
+//auto application = std::make_shared<app::Application>(game);
 
 class RequestHandler : public std::enable_shared_from_this<RequestHandler> {
 //class RequestHandler {
@@ -64,9 +62,12 @@ public:
     using Strand = net::strand<net::io_context::executor_type>;
 
     explicit RequestHandler(fs::path wwwRootPath, Strand api_strand, model::Game& game)//, std::map<ExpansionFile, ContentType>& mapContex)
+    //explicit RequestHandler(fs::path wwwRootPath, Strand api_strand, std::shared_ptr<app::Application> app)
         : wwwRootPath_{std::move(wwwRootPath)}
-        , api_strand_{api_strand}
-        , game_{game} { }
+        , api_strand_{std::move(api_strand)}
+        //, game_{game}
+        ,app_{std::make_shared<app::Application>(game)}
+        , apiHandler_{app_}{ }
 
 
     RequestHandler(const RequestHandler&) = delete;
@@ -81,14 +82,16 @@ public:
         //void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {//
         // Обработать запрос request и отправить ответ, используя send
 
-         try {
+        try {
             if (isApiRequest(req)) {
                 auto handle = [self = shared_from_this(), send,
                         req = std::forward<decltype(req)>(req), version, keep_alive] {
                     try {
                         // Этот assert не выстрелит, так как лямбда-функция будет выполняться внутри strand
                         assert(self->api_strand_.running_in_this_thread());
-                        return send(self->HandleApiRequest(req));
+                        ApiHandler apiHandler(self->app_);//, req);
+                        //return send(apiHandler.HandlerApiRequest(req));
+                        return send(self->apiHandler_.HandlerApiRequest(req));
                     } catch (...) {
                         send(self->ReportServerError(version, keep_alive));
                     }
@@ -108,19 +111,7 @@ public:
 
 
 
-        auto target = req.target();
-
-
-
-
-        /*if (isApiRequest(req)) {
-            send(json_response(http::status::bad_request,
-                               GetJsonDataError("badRequest"s, "Bad request"s)));
-        }*/
-
-        http::write(adapter, req);
-        // Здесь можно обработать запрос и сформировать ответ, но пока всегда отвечаем: Hello
-        //return text_response(http::status::ok, "<strong>Hello</strong>"sv);
+        //http::write(adapter, req);
 
     }
 
@@ -128,7 +119,6 @@ private:
     using FileRequestResult = std::variant</*EmptyResponse,*/ StringResponse, FileResponse>;
 
     FileRequestResult HandleFileRequest(const StringRequest& req);
-    StringResponse HandleApiRequest(const StringRequest& req);
     StringResponse ReportServerError(unsigned version, bool keep_alive);
 
     StringResponse JsonResponse(const StringRequest &req, const http::status status, const json::value value)
@@ -139,13 +129,15 @@ private:
                                   ContentType::APP_JSON);
     }
 
+    bool isApiRequest(const StringRequest &req);
 
     const fs::path wwwRootPath_;
     Strand api_strand_;
-    model::Game& game_;
+
     SyncWriteOStreamAdapter adapter{std::cout};
 
-    app::PlayerTokens playerTokens_;
+    std::shared_ptr<app::Application> app_;
+    ApiHandler apiHandler_;
 
 
     //FileResponse getFile(std::string_view target);
