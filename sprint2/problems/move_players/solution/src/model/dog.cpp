@@ -12,6 +12,8 @@ Dog::Dog(std::string name)
     , direction_(Direction::NORTH)
     , position_(0.f, 0.f)
     , speed_(0.f, 0.f)
+    , dogSpeed_{0.}
+
 
 { }
 
@@ -36,9 +38,9 @@ void Dog::SetPosition(const PosDouble &position)
     position_.y = position.y;
 }
 
-void Dog::SetDefaultDogSpeed(const float speed)
+void Dog::SetDogSpeed(const float dogSpeed)
 {
-    defaultDogSpeed = speed;
+    dogSpeed_ = dogSpeed;
 }
 
 const SpeedDouble &Dog::GetSpeed() const

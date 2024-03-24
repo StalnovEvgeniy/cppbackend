@@ -68,14 +68,14 @@ void LoadBuildings(Map& map, const json::array& buildings) {
 }
 
 void LoadOffices(Map& map, const json::array& offices) {
-    for (const auto& office_element: offices) {
-        const auto& office_obj = office_element.as_object();
+    for (const auto& officeElement: offices) {
+        const auto& officeObj = officeElement.as_object();
 
-        auto id = toString(office_obj.at(MapStrKey::id).as_string());
-        int x = office_obj.at(MapStrKey::x).as_int64();
-        int y = office_obj.at(MapStrKey::y).as_int64();
-        int x_offset = office_obj.at(MapStrKey::offsetX).as_int64();
-        int y_offset = office_obj.at(MapStrKey::offsetY).as_int64();
+        auto id = toString(officeObj.at(MapStrKey::id).as_string());
+        int x = officeObj.at(MapStrKey::x).as_int64();
+        int y = officeObj.at(MapStrKey::y).as_int64();
+        int x_offset = officeObj.at(MapStrKey::offsetX).as_int64();
+        int y_offset = officeObj.at(MapStrKey::offsetY).as_int64();
 
         map.AddOffice(Office {
             Office::Id(id),
@@ -101,13 +101,24 @@ Game LoadGame(const fs::path& json_path) {
 
     auto obj = json::parse(buffer.str()).as_object();
 
+    double defDogSpeed{1.0};
+    if (obj.contains(MapStrKey::defaultDogSpeed)) {
+        defDogSpeed = obj.at(MapStrKey::defaultDogSpeed).as_double();
+    }
+
     const auto& maps = obj.at(MapStrKey::maps).as_array();
     for (const auto& mapElement: maps) {
         const auto& mapObj = mapElement.as_object();
 
         auto id = toString(mapObj.at(MapStrKey::id).as_string());
         auto name = toString(mapObj.at(MapStrKey::name).as_string());
-        Map map(Map::Id{id}, name);
+
+        double dogSpeed{defDogSpeed};
+        if (obj.contains(MapStrKey::dogSpeed)) {
+            dogSpeed = obj.at(MapStrKey::dogSpeed).as_double();
+        }
+
+        Map map(Map::Id{id}, name, dogSpeed);
 
         LoadRoads(map, mapObj.at(MapStrKey::roads).as_array());
         LoadBuildings(map, mapObj.at(MapStrKey::buildings).as_array());

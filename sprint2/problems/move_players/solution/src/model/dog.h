@@ -28,7 +28,8 @@ public:
     const PosDouble &GetPosition() const;
     void SetPosition(const PosDouble &position);
 
-    void SetDefaultDogSpeed(const float speed);
+    void SetDogSpeed(const float dogSpeed);
+
     const SpeedDouble &GetSpeed() const;
     void SetSpeed(const SpeedDouble& speed);
 
@@ -42,7 +43,7 @@ private:
     PosDouble position_;
     SpeedDouble speed_;
 
-    float defaultDogSpeed{0.};
+    float dogSpeed_;
     static int idCount;
 
 };

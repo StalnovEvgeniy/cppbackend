@@ -30,6 +30,8 @@ struct MapStrKey {
     constexpr static auto speed{"speed"};
     constexpr static auto dir{"dir"};
     constexpr static auto move{"move"};
+    constexpr static auto defaultDogSpeed{"defaultDogSpeed"};
+    constexpr static auto dogSpeed{"dogSpeed"};
 
 };
 

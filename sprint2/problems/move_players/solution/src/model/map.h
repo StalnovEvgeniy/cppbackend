@@ -107,7 +107,7 @@ public:
     using Buildings = std::vector<Building>;
     using Offices = std::vector<Office>;
 
-    Map(Id id, std::string name) noexcept;
+    Map(Id id, std::string name, const double defDogSpeed = 1.0) noexcept;
 
     const Id& GetId() const noexcept;
 
@@ -125,6 +125,9 @@ public:
 
     void AddOffice(Office office);
 
+    double GetDefaultDogSpeed(void) const;
+    void SetDefaultDogSpeed(const double defDogSpeed);
+
 private:
     using OfficeIdToIndex = std::unordered_map<Office::Id, size_t, util::TaggedHasher<Office::Id>>;
 
@@ -135,6 +138,8 @@ private:
 
     OfficeIdToIndex warehouse_id_to_index_;
     Offices offices_;
+
+    double defDogSpeed_;
 };
 
 }
