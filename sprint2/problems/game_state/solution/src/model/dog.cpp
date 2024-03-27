@@ -12,6 +12,8 @@ Dog::Dog(std::string name)
     , direction_(Direction::NORTH)
     , position_(0.f, 0.f)
     , speed_(0.f, 0.f)
+    , dogSpeed_{0.}
+
 
 { }
 
@@ -34,6 +36,11 @@ void Dog::SetPosition(const PosDouble &position)
 {
     position_.x = position.x;
     position_.y = position.y;
+}
+
+void Dog::SetDogSpeed(const float dogSpeed)
+{
+    dogSpeed_ = dogSpeed;
 }
 
 const SpeedDouble &Dog::GetSpeed() const
@@ -63,6 +70,14 @@ void Dog::SetDirection(const std::string str)
     else if (str ==DirStr::Right)
         direction_ = Direction::EAST;
 }
+
+PosDouble Dog::CalcNewPosition(const double dTime)
+{
+    PosDouble pos = GetPosition();
+    SpeedDouble speed = GetSpeed();
+
+}
+
 
 
 }

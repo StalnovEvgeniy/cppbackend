@@ -5,9 +5,11 @@
 namespace model {
 using namespace std::literals;
 
-Map::Map(Map::Id id, std::string name) noexcept
+Map::Map(Map::Id id, std::string name, const double defDogSpeed) noexcept
     : id_(std::move(id))
-    , name_(std::move(name)) {
+    , name_(std::move(name))
+    , defDogSpeed_{defDogSpeed}
+{
 }
 
 const Map::Id &Map::GetId() const noexcept {
@@ -54,9 +56,21 @@ void Map::AddOffice(Office office) {
     }
 }
 
+double Map::GetDefaultDogSpeed() const
+{
+    return defDogSpeed_;
+}
+
+void Map::SetDefaultDogSpeed(const double defDogSpeed)
+{
+    defDogSpeed_ = defDogSpeed;
+}
+
 const Office::Id &Office::GetId() const noexcept {
     return id_;
 }
+
+
 
 
 }  // namespace model

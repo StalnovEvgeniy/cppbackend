@@ -28,12 +28,15 @@ public:
     const PosDouble &GetPosition() const;
     void SetPosition(const PosDouble &position);
 
+    void SetDogSpeed(const float dogSpeed);
+
     const SpeedDouble &GetSpeed() const;
     void SetSpeed(const SpeedDouble& speed);
 
     const std::string &GetDirection() const;
     void SetDirection(const std::string str);
 
+    PosDouble CalcNewPosition(const double dTime);
 private:
     Id id_;
     std::string name_;
@@ -41,6 +44,7 @@ private:
     PosDouble position_;
     SpeedDouble speed_;
 
+    float dogSpeed_;
     static int idCount;
 
 };

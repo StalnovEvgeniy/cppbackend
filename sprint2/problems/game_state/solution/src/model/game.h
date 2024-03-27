@@ -19,7 +19,6 @@ using Sessions = std::vector<std::shared_ptr<GameSession> >;
 
 class Game {
 public:
-
     void AddMap(Map map);
 
     const Maps &GetMaps() const noexcept;
@@ -28,6 +27,8 @@ public:
 
     void AddGameSession(std::shared_ptr<GameSession> session);
     std::shared_ptr<GameSession> FindGameSessionBy(const Map::Id& id) ;
+
+    void SetDefaultDogSpeed(const double defaultDogSpeed);
 
 private:
     using MapIdHasher = util::TaggedHasher<Map::Id>;

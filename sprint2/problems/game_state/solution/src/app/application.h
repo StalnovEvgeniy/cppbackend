@@ -37,12 +37,15 @@ public:
 
     const PlayerTokens::TokenToPlayer& GetTokenToPlayer() const;
 
-    PlayerTokens playerTokens_;
+    void SetTimeDelta(const double timeDelta);
 
 private:
+    PlayerTokens playerTokens_;
 
 
     model::Game& game_;
+
+    double timeDelta_;
 
 
 };

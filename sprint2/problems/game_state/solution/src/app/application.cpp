@@ -57,3 +57,8 @@ const PlayerTokens::TokenToPlayer &Application::GetTokenToPlayer() const
 {
     return playerTokens_.GetTokenToPlayer();
 }
+
+void Application::SetTimeDelta(const double timeDelta)
+{
+    timeDelta_ = timeDelta;
+}

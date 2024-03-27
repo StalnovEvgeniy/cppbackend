@@ -67,5 +67,4 @@ std::shared_ptr<GameSession> Game::FindGameSessionBy(const Map::Id &id)
     return session;
 }
 
-
 }  // namespace model
